@@ -1,0 +1,35 @@
+UNF:
+db(staffNo, dentistName, patientNo, patientName, appointmentDate, appointmentTime, surgeryNo)
+
+
+1NF:
+no repeating groups, define primary key, all data is present
+
+db(*staffNo*, dentistName, *patientNo*, patientName, *appointmentDate*, appointmentTime, surgeryNo)
+
+
+2NF:
+1NF + no partial dependencies
+dentistName is only dependent on staffNo -> 2NF violation
+patientName is only dependent on patientNo -> 2NF violation
+
+appointment(*staffNo*, *patientNo*, *appointmentDate*, appointmentTime, surgeryNo)
+dentist(*staffNo*, dentistName)
+patient(*patientNo*, patientName)
+
+
+3NF:
+2NF + no transitive dependencies
+no 3NF violation -> 3NF = 2NF
+
+appointment(*staffNo*, *patientNo*, *appointmentDate*, appointmentTime, surgeryNo)
+dentist(*staffNo*, dentistName)
+patient(*patientNo*, patientName)
+
+
+BCNF:
+each determinant is a candidate key
+=3NF
+appointment(*staffNo*, *patientNo*, *appointmentDate*, appointmentTime, surgeryNo)
+dentist(*staffNo*, dentistName)
+patient(*patientNo*, patientName)
