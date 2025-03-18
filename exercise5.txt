@@ -1,0 +1,158 @@
+MariaDB [vacation]> select guestname,guestaddress from guest where guestaddress like "%London" order by guestname;
++--------------+--------------------+
+| guestname    | guestaddress       |
++--------------+--------------------+
+| John Kay     | 56 High St, London |
+| Mike Ritchie | 18 Tain St, London |
++--------------+--------------------+
+2 rows in set (0.001 sec)
+
+
+MariaDB [vacation]> select guest.guestname, guest.guestaddress from guest join booking on booking.guestno = guest.guestno join hotel o
+n hotel.hotelno = booking.hotelno where hotel.city ="London" order by guest.guestname;
++--------------+-----------------------+
+| guestname    | guestaddress          |
++--------------+-----------------------+
+| Carol Farrel | 6 Achray St, Glasgow  |
+| Joe Keogh    | 2 Fergus Dr, Aberdeen |
+| John Kay     | 56 High St, London    |
+| John Kay     | 56 High St, London    |
+| Mike Ritchie | 18 Tain St, London    |
+| Mike Ritchie | 18 Tain St, London    |
+| Tina Murphy  | 63 Well St, Glasgow   |
++--------------+-----------------------+
+7 rows in set (0.001 sec)
+
+
+MariaDB [vacation]> select * from room where type ="double" or type="family" and price < 40.00 order by price;
++--------+---------+--------+-------+
+| roomno | hotelno | type   | price |
++--------+---------+--------+-------+
+|    801 | ch02    | double | 15.00 |
+|    601 | fb01    | double | 29.00 |
+|   1001 | dc01    | double | 30.00 |
+|   1101 | dc01    | family | 35.00 |
+|    701 | fb01    | family | 39.00 |
+|   1101 | fb02    | double | 86.00 |
++--------+---------+--------+-------+
+6 rows in set (0.001 sec)
+
+
+MariaDB [vacation]> select * from booking where dateto IS NULL;
++---------+---------+------------+--------+--------+
+| hotelno | guestno | datefrom   | dateto | roomno |
++---------+---------+------------+--------+--------+
+| ch01    |   10006 | 2023-04-21 | NULL   |   1101 |
+| dc01    |   10003 | 2023-05-20 | NULL   |   1001 |
+| fb01    |   10001 | 2023-05-01 | NULL   |    701 |
++---------+---------+------------+--------+--------+
+3 rows in set (0.001 sec)
+
+
+MariaDB [vacation]> select *,avg(price) from room;
++--------+---------+--------+-------+------------+
+| roomno | hotelno | type   | price | avg(price) |
++--------+---------+--------+-------+------------+
+|    501 | fb01    | single | 19.00 |  35.748333 |
++--------+---------+--------+-------+------------+
+1 row in set (0.001 sec)
+
+
+MariaDB [vacation]> select *, sum(price) as totalRevenue from room where type="double";
++--------+---------+--------+-------+--------------+
+| roomno | hotelno | type   | price | totalRevenue |
++--------+---------+--------+-------+--------------+
+|    601 | fb01    | double | 29.00 |       160.00 |
++--------+---------+--------+-------+--------------+
+1 row in set (0.001 sec)
+
+
+MariaDB [vacation]> select count(distinct(guestno)) as differentGuests from booking;
++-----------------+
+| differentGuests |
++-----------------+
+|               7 |
++-----------------+
+1 row in set (0.001 sec)
+
+
+MariaDB [vacation]> select count(distinct(guestno)) as differentGuests from booking where (datefrom between "2023-08-01" and "2023-08-31") or (dateto between "2023-08-01" and "2023-08-31");
++-----------------+
+| differentGuests |
++-----------------+
+|               0 |
++-----------------+
+1 row in set (0.003 sec)
+
+
+MariaDB [vacation]> select room.*,hotel.hotelname from room join hotel on hotel.hotelno=room.hotel
+no where hotel.hotelname="The Tower Hotel";
++--------+---------+--------+-------+-----------------+
+| roomno | hotelno | type   | price | hotelname       |
++--------+---------+--------+-------+-----------------+
+|    501 | fb01    | single | 19.00 | The Tower Hotel |
+|    601 | fb01    | double | 29.00 | The Tower Hotel |
+|    701 | fb01    | family | 39.00 | The Tower Hotel |
++--------+---------+--------+-------+-----------------+
+3 rows in set (0.001 sec)
+
+MariaDB [vacation]> select * from booking join guest on guest.guestno = booking.guestno join hotel on hotel.hotelno=booking.hotelno where hotel.hotelname="The Tower Hotel" and DATE(NOW() between datefrom and dateto);
+Empty set (0.001 sec)
+
+
+MariaDB [vacation]> select * from hotel join room on room.hotelno =hotel.hotelno join booking on booking.hotelno = hotel.hotelno join guest on booking.guestno = guest.guestno where hotelname="The Tower Hotel" and date(now() between datefrom and dateto);
+Empty set (0.001 sec)
+
+
+MariaDB [vacation]> select sum(price) from booking join hotel on hotel.hotelno=booking.hotelno join room on room.roomno=booking.roomno where hotel.hotelname="The Tower Hotel" and date(now() between datefrom and dateto);
++------------+
+| sum(price) |
++------------+
+|       NULL |
++------------+
+1 row in set (0.001 sec)
+
+
+MariaDB [vacation]> select * from room join hotel on room.hotelno =hotel.hotelno where hotel.hotelname="The Tower Hotel" and roomno not in (select room.roomno from booking join hotel on hotel.hotelno=booking.hotelno join room on room.roomno=booking.roomno where hotel.hotelname="The Tower Hotel" and date(now() between datefrom and dateto));
++--------+---------+--------+-------+---------+-----------------+--------+
+| roomno | hotelno | type   | price | hotelno | hotelname       | city   |
++--------+---------+--------+-------+---------+-----------------+--------+
+|    501 | fb01    | single | 19.00 | fb01    | The Tower Hotel | London |
+|    601 | fb01    | double | 29.00 | fb01    | The Tower Hotel | London |
+|    701 | fb01    | family | 39.00 | fb01    | The Tower Hotel | London |
++--------+---------+--------+-------+---------+-----------------+--------+
+3 rows in set (0.001 sec)
+
+
+MariaDB [vacation]> select sum(price) from room join hotel on room.hotelno =hotel.hotelno where hotel.hotelname="The Tower Hotel" and roomno not in (select
+ room
+ate(now() between datefrom and dateto));
++------------+
+| sum(price) |
++------------+
+|      87.00 |
++------------+
+1 row in set (0.004 sec)
+
+
+MariaDB [vacation]> select hotel.hotelname,count(*) from hotel join room on room.hotelno = hotel.hotelno where hotel.city = "London" group by hotel.hotelname ;
++-----------------+----------+
+| hotelname       | count(*) |
++-----------------+----------+
+| Omni Shoreham   |        2 |
+| Phoenix Park    |        2 |
+| The Tower Hotel |        3 |
++-----------------+----------+
+3 rows in set (0.001 sec)
+
+
+MariaDB [vacation]> select * from (select hotelname,type,count(type) from hotel join room on hotel.hotelno=room.hotelno join booking on booking.roomno=room.roomno and hotel.hotelno=booking.hotelno where hotel.city ="London" group by hotelname, type order by count(type) desc) as sel1 group by sel1.hotelname;
++-----------------+--------+-------------+
+| hotelname       | type   | count(type) |
++-----------------+--------+-------------+
+| Omni Shoreham   | family |           1 |
+| Phoenix Park    | double |           1 |
+| The Tower Hotel | single |           2 |
++-----------------+--------+-------------+
+3 rows in set (0.001 sec)
+
